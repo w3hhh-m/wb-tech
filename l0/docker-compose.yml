@@ -1,0 +1,97 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wb-tech-l0-app
+    restart: unless-stopped
+    # using environment variables from .env file
+    env_file:
+      - .env
+    # waits for healthy postgres and kafka
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    # is in the same network with other containers to communicate
+    networks:
+      - wb-tech-l0-network
+    # forwarding port to host
+    ports:
+      - "8080:8080"
+
+  postgres:
+    image: postgres:17-alpine
+    container_name: wb-tech-l0-postgres
+    restart: unless-stopped
+    # using environment variables from .env file
+    # to match the application connection configuration
+    # such as user, password, database name
+    env_file:
+      - .env
+    # using volume to save data between restarts
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # is in the same network with other containers to communicate
+    networks:
+      - wb-tech-l0-network
+    # health check to confirm that postgres is ready
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: 'bitnami/kafka:latest'
+    container_name: wb-tech-l0-kafka
+    # using explicitly set environment variables
+    # because it is only configuration variables
+    # and there is no need to provide them in main application
+    environment:
+      # use KRaft mode (without ZooKeeper)
+      - KAFKA_ENABLE_KRAFT=yes
+      # defines the node's roles as both broker and controller
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      # set the controller listener name as "CONTROLLER"
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # configure two listeners: one for clients (:9092) and one for controller (:9093)
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      # map listener names to security protocols (both use PLAINTEXT)
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      # tell client how to connect to this broker (using hostname "kafka" and port 9092)
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      # set broker id to 1
+      - KAFKA_CFG_BROKER_ID=1
+      # set node id to 1
+      - KAFKA_CFG_NODE_ID=1
+      # define the voting controller nodes (only this one)
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      # allow unsafe PLAINTEXT communication
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    # using volume to save data between restarts
+    volumes:
+      - kafka_data:/bitnami/kafka
+    # is in the same network with other containers to communicate
+    networks:
+      - wb-tech-l0-network
+    # health check to confirm that kafka is ready
+    healthcheck:
+      test: [ "CMD-SHELL", "kafka-topics.sh --list --bootstrap-server kafka:9092 || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    # default driver, saving files to local fs
+    driver: local
+  kafka_data:
+    # default driver, saving files to local fs
+    driver: local
+
+networks:
+  wb-tech-l0-network:
+    # default driver, containers can communicate
+    driver: bridge 
