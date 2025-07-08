@@ -1,8 +1,9 @@
 package postgres
 
 import (
-	"github.com/caarlos0/env/v11"
 	"time"
+
+	"github.com/caarlos0/env/v11"
 )
 
 // Config describes Postgres storage configuration

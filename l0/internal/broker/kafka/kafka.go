@@ -2,9 +2,10 @@ package kafka
 
 import (
 	"context"
-	kafkago "github.com/segmentio/kafka-go"
 	"time"
 	"wb-tech-l0/internal/logger"
+
+	kafkago "github.com/segmentio/kafka-go"
 )
 
 // Kafka is a Broker interface implementation for Kafka

@@ -1,0 +1,62 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - bodyclose      # http response body not closed
+    - errcheck       # unchecked errors
+    - goconst        # repeated strings/numbers
+    - gocritic       # bug, performance, style checks
+    - govet          # suspicious constructs
+    - ineffassign    # ineffectual assignments
+    - prealloc       # slice preallocation
+    - staticcheck    # advanced static analysis
+    - unconvert      # unnecessary type conversions
+    - unparam        # unused function params
+    - unused         # unused code
+    - revive         # style and best practices
+    - copyloopvar    # copy loop variable in closure
+    - gosec          # security issues
+
+  settings:
+    errcheck:
+      check-blank: true
+
+    govet:
+      disable:
+        - fieldalignment # struct field alignment
+
+    revive:
+      severity: warning
+
+    staticcheck:
+      checks: [ "all" ]
+
+    gosec:
+      severity: medium
+      confidence: medium
+
+  exclusions:
+    presets:
+      - comments
+    paths:
+      - bin$
+      - \.git$
+      - misc$
+      - spec$
+      - pkg$
+      - common$
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+
+run:
+  concurrency: 2
+  timeout: 3m
+  tests: true

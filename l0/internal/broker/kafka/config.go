@@ -1,8 +1,9 @@
 package kafka
 
 import (
-	"github.com/caarlos0/env/v11"
 	"time"
+
+	"github.com/caarlos0/env/v11"
 )
 
 // Config describes Kafka broker configuration

@@ -16,6 +16,11 @@ import (
 )
 
 func main() {
+	// TODO: log.Fatal will exit, and `defer log.Sync()` will not run
+	// TODO: move logic to some function, not main
+
+	// TODO: update README
+
 	// loading application configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -32,7 +37,7 @@ func main() {
 		os.Exit(1)
 	}
 	// flushing any buffered log entries before exiting
-	defer log.Sync()
+	defer log.Sync() // nolint: errcheck
 
 	log.Info("Successfully loaded application config")
 
