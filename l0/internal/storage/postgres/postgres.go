@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"time"
-	"wb-tech-l0/internal/storage"
+	"wb-tech-l0/internal/logger"
 )
 
 // Postgres is a Storage interface implementation for PostgreSQL
@@ -14,16 +14,12 @@ type Postgres struct {
 	requestTimeout time.Duration
 	retryTimeout   time.Duration
 	maxRetries     int
+
+	logger logger.Logger
 }
 
-// New loads Postgres configuration and returns
-// initialized PostgreSQL implementation of Storage interface
-func New() (storage.Storage, error) {
-	cfg, err := LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("error loading postgres storage config: %w", err)
-	}
-
+// New creates and returns initialized PostgreSQL implementation of Storage interface
+func New(cfg *Config, logger logger.Logger) (*Postgres, error) {
 	connString := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database, cfg.SSLMode,
@@ -50,6 +46,7 @@ func New() (storage.Storage, error) {
 		requestTimeout: cfg.RequestTimeout,
 		retryTimeout:   cfg.RetryTimeout,
 		maxRetries:     cfg.MaxRetries,
+		logger:         logger,
 	}, nil
 }
 

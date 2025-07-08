@@ -4,7 +4,9 @@ import "github.com/caarlos0/env/v11"
 
 // Config describes main application configuration
 type Config struct {
-	LogLevel    string `env:"LOG_LEVEL" envDefault:"info"`
+	Hostname string `env:"HOSTNAME" envDefault:"localhost"`
+	LogLevel string `env:"LOG_LEVEL" envDefault:"info"`
+
 	BrokerType  string `env:"BROKER_TYPE,required,notEmpty"`
 	StorageType string `env:"STORAGE_TYPE,required,notEmpty"`
 	CacheType   string `env:"CACHE_TYPE,required,notEmpty"`

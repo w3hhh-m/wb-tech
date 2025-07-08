@@ -2,25 +2,21 @@ package local
 
 import (
 	"context"
-	"fmt"
-	"wb-tech-l0/internal/cache"
+	"wb-tech-l0/internal/logger"
 )
 
 // Local is a Cache interface implementation for application in-memory cache
 type Local struct {
 	maxItems int
+
+	logger logger.Logger
 }
 
-// New loads Local configuration and returns
-// initialized Local implementation of Cache interface
-func New() (cache.Cache, error) {
-	cfg, err := LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("error loading local cache config: %w", err)
-	}
-	_ = cfg
+// New creates and returns initialized Local implementation of Cache interface
+func New(cfg *Config, logger logger.Logger) (*Local, error) {
 	return &Local{
 		maxItems: cfg.MaxItems,
+		logger:   logger,
 	}, nil
 }
 

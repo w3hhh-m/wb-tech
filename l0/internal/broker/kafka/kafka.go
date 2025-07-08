@@ -2,10 +2,9 @@ package kafka
 
 import (
 	"context"
-	"fmt"
 	kafkago "github.com/segmentio/kafka-go"
 	"time"
-	"wb-tech-l0/internal/broker"
+	"wb-tech-l0/internal/logger"
 )
 
 // Kafka is a Broker interface implementation for Kafka
@@ -14,16 +13,12 @@ type Kafka struct {
 	readTimeout  time.Duration
 	retryTimeout time.Duration
 	maxRetries   int
+
+	logger logger.Logger
 }
 
-// New loads Kafka configuration and
-// returns initialized Kafka implementation of Storage interface
-func New() (broker.Broker, error) {
-	cfg, err := LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("error loading kafka broker config: %w", err)
-	}
-
+// New creates and returns initialized Kafka implementation of Storage interface
+func New(cfg *Config, logger logger.Logger) (*Kafka, error) {
 	kafkaCfg := kafkago.ReaderConfig{
 		Brokers:          cfg.Brokers,
 		Topic:            cfg.Topic,
@@ -44,6 +39,7 @@ func New() (broker.Broker, error) {
 		readTimeout:  cfg.ReadTimeOut,
 		retryTimeout: cfg.RetryTimeOut,
 		maxRetries:   cfg.MaxRetries,
+		logger:       logger,
 	}, nil
 }
 
