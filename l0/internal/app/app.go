@@ -67,7 +67,7 @@ func RunApp() error {
 
 	// running main application logic
 	// this method will block until exit signal
-	app.Run(ctx)
+	app.Run()
 
 	// performing graceful shutdown
 	app.Shutdown()
@@ -119,13 +119,13 @@ func New(ctx context.Context) (*App, error) {
 
 // Run runs the main application logic.
 // It blocks until application exit signal.
-func (a *App) Run(ctx context.Context) {
+func (a *App) Run() {
 	a.log.Info("Application started successfully")
 
 	// TODO: main logic
 
 	// waiting for application exit signal
-	<-ctx.Done()
+	<-a.ctx.Done()
 	a.log.Info("Got exiting signal. Shutting down application...", logger.Field("timeout", a.cfg.ShutdownTimeout))
 }
 
