@@ -9,18 +9,22 @@ import (
 type Local struct {
 	maxItems int
 
-	logger logger.Logger
+	ctx context.Context
+	log logger.Logger
 }
 
 // New creates and returns initialized Local implementation of Cache interface
-func New(cfg *Config, logger logger.Logger) (*Local, error) {
+func New(ctx context.Context, cfg *Config, log logger.Logger) (*Local, error) {
+	log.Debug("Attempting to create cache connection")
 	return &Local{
 		maxItems: cfg.MaxItems,
-		logger:   logger,
+		log:      log,
+		ctx:      ctx,
 	}, nil
 }
 
-func (l *Local) Ping(ctx context.Context) error {
-	// TODO: implement me
+// Close closes the Local cache connection
+func (l *Local) Close() error {
+	// nothing to close for in-memory cache
 	return nil
 }

@@ -1,8 +1,7 @@
 package storage
 
-import "context"
-
 // Storage interface
 type Storage interface {
-	Ping(ctx context.Context) error
+	// Close closes the Storage connection
+	Close() error
 }

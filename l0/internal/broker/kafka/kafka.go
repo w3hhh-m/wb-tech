@@ -15,11 +15,14 @@ type Kafka struct {
 	retryTimeout time.Duration
 	maxRetries   int
 
-	logger logger.Logger
+	ctx context.Context
+	log logger.Logger
 }
 
-// New creates and returns initialized Kafka implementation of Storage interface
-func New(cfg *Config, logger logger.Logger) (*Kafka, error) {
+// New creates and returns initialized Kafka implementation of Broker interface
+func New(ctx context.Context, cfg *Config, log logger.Logger) (*Kafka, error) {
+	log.Debug("Attempting to create broker connection")
+
 	kafkaCfg := kafkago.ReaderConfig{
 		Brokers:          cfg.Brokers,
 		Topic:            cfg.Topic,
@@ -40,11 +43,12 @@ func New(cfg *Config, logger logger.Logger) (*Kafka, error) {
 		readTimeout:  cfg.ReadTimeOut,
 		retryTimeout: cfg.RetryTimeOut,
 		maxRetries:   cfg.MaxRetries,
-		logger:       logger,
+		log:          log,
+		ctx:          ctx,
 	}, nil
 }
 
-func (k *Kafka) Ping(ctx context.Context) error {
-	// TODO: implement me
-	return nil
+// Close closes the Kafka broker connection
+func (k *Kafka) Close() error {
+	return k.reader.Close()
 }

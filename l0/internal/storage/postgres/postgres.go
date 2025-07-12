@@ -16,11 +16,12 @@ type Postgres struct {
 	retryTimeout   time.Duration
 	maxRetries     int
 
-	logger logger.Logger
+	ctx context.Context
+	log logger.Logger
 }
 
-// New creates and returns initialized PostgreSQL implementation of Storage interface
-func New(cfg *Config, logger logger.Logger) (*Postgres, error) {
+// New creates and returns initialized Postgres implementation of Storage interface
+func New(ctx context.Context, cfg *Config, log logger.Logger) (*Postgres, error) {
 	connString := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database, cfg.SSLMode,
@@ -47,11 +48,13 @@ func New(cfg *Config, logger logger.Logger) (*Postgres, error) {
 		requestTimeout: cfg.RequestTimeout,
 		retryTimeout:   cfg.RetryTimeout,
 		maxRetries:     cfg.MaxRetries,
-		logger:         logger,
+		log:            log,
+		ctx:            ctx,
 	}, nil
 }
 
-func (p *Postgres) Ping(ctx context.Context) error {
-	// TODO: implement me
+// Close closes the Postgres storage connection
+func (p *Postgres) Close() error {
+	p.pool.Close()
 	return nil
 }

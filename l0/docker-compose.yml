@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: wb-tech-l0-app
+    # wait SHUTDOWN_TIMEOUT before stopping container
+    stop_grace_period: $SHUTDOWN_TIMEOUT
     restart: unless-stopped
     # using environment variables from .env file
     env_file:

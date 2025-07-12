@@ -8,16 +8,28 @@ import (
 
 // Config describes Kafka broker configuration
 type Config struct {
-	Brokers     []string `env:"KAFKA_BROKERS,required,notEmpty" envSeparator:","`
-	Topic       string   `env:"KAFKA_TOPIC,required,notEmpty"`
-	GroupID     string   `env:"KAFKA_GROUP_ID,required,notEmpty"`
-	StartOffset int64    `env:"KAFKA_START_OFFSET" envDefault:"-2"`
-	MinBytes    int      `env:"KAFKA_MIN_BYTES" envDefault:"1"`
-	MaxBytes    int      `env:"KAFKA_MAX_BYTES" envDefault:"10e6"`
+	// Brokers is a list of Kafka brokers to connect to.
+	Brokers []string `env:"KAFKA_BROKERS,required,notEmpty" envSeparator:","`
+	// Topic is a Kafka topic to consume messages from.
+	Topic string `env:"KAFKA_TOPIC,required,notEmpty"`
+	// GroupID is a Kafka group ID to consume messages from.
+	GroupID string `env:"KAFKA_GROUP_ID,required,notEmpty"`
+	// StartOffset is a Kafka start offset to consume messages from.
+	// -2 means to consume from the least recent offset.
+	// -1 means to consume from the most recent offset.
+	StartOffset int64 `env:"KAFKA_START_OFFSET" envDefault:"-2"`
+	// MinBytes is a minimum number of bytes to read from Kafka.
+	MinBytes int `env:"KAFKA_MIN_BYTES" envDefault:"1"`
+	// MaxBytes is a maximum number of bytes to read from Kafka.
+	MaxBytes int `env:"KAFKA_MAX_BYTES" envDefault:"10e6"`
+	// ReadTimeOut is a timeout for reading from Kafka.
+	ReadTimeOut time.Duration `env:"KAFKA_READ_TIMEOUT" envDefault:"5s"`
 
-	ReadTimeOut  time.Duration `env:"KAFKA_READ_TIMEOUT" envDefault:"5s"`
+	// custom retry configuration
+	// RetryTimeOut is a timeout for retrying operations.
 	RetryTimeOut time.Duration `env:"KAFKA_RETRY_TIMEOUT" envDefault:"5s"`
-	MaxRetries   int           `env:"KAFKA_MAX_RETRIES" envDefault:"3"`
+	// MaxRetries is a maximum number of retries for operations.
+	MaxRetries int `env:"KAFKA_MAX_RETRIES" envDefault:"3"`
 }
 
 // LoadConfig loads Kafka broker Config from environment variables.
@@ -28,5 +40,6 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	// not validating config here, because it`s validated while parsing
 	return cfg, nil
 }
