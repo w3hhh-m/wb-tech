@@ -3,6 +3,8 @@ package config
 import (
 	"time"
 
+	"github.com/go-playground/validator/v10"
+
 	"github.com/caarlos0/env/v11"
 )
 
@@ -11,7 +13,7 @@ type Config struct {
 	// Hostname is a container name set by docker
 	Hostname string `env:"HOSTNAME" envDefault:"localhost"`
 	// LogLevel is a level of logs
-	LogLevel string `env:"LOG_LEVEL" envDefault:"info"`
+	LogLevel string `env:"LOG_LEVEL" envDefault:"info" validate:"oneof=debug info warn error"`
 
 	// BrokerType is a type of broker used in application
 	BrokerType string `env:"BROKER_TYPE,required,notEmpty"`
@@ -21,7 +23,7 @@ type Config struct {
 	CacheType string `env:"CACHE_TYPE,required,notEmpty"`
 
 	// ShutdownTimeout is a timeout for application graceful shutdown
-	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" envDefault:"10s"`
+	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" envDefault:"10s" validate:"gte=1s"`
 }
 
 // LoadConfig loads application Config from environment variables.
@@ -32,5 +34,12 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	validate := validator.New()
+	err = validate.Struct(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	return cfg, nil
 }

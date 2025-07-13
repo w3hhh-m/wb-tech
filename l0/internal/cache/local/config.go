@@ -2,12 +2,13 @@ package local
 
 import (
 	"github.com/caarlos0/env/v11"
+	"github.com/go-playground/validator/v10"
 )
 
 // Config describes Local cache configuration
 type Config struct {
 	// MaxItems is a maximum number of items that can be stored in Local cache
-	MaxItems int `env:"LOCAL_CACHE_MAX_ITEMS" envDefault:"1000"`
+	MaxItems int `env:"LOCAL_CACHE_MAX_ITEMS" envDefault:"1000" validate:"gte=1"`
 
 	// no retries on Local cache operations
 }
@@ -21,8 +22,11 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 
-	if cfg.MaxItems < 0 {
-		cfg.MaxItems = 1000
+	validate := validator.New()
+	err = validate.Struct(cfg)
+	if err != nil {
+		return nil, err
 	}
+
 	return cfg, nil
 }
