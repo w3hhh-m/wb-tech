@@ -2,6 +2,7 @@ package kafka
 
 import (
 	"context"
+	"sync"
 	"time"
 	"wb-tech-l0/internal/logger"
 
@@ -14,6 +15,7 @@ type Kafka struct {
 	readTimeout  time.Duration
 	retryTimeout time.Duration
 	maxRetries   int
+	maxWorkers   int
 
 	ctx context.Context
 	log logger.Logger
@@ -43,6 +45,7 @@ func New(ctx context.Context, cfg *Config, log logger.Logger) (*Kafka, error) {
 		readTimeout:  cfg.ReadTimeOut,
 		retryTimeout: cfg.RetryTimeOut,
 		maxRetries:   cfg.MaxRetries,
+		maxWorkers:   cfg.MaxWorkers,
 		log:          log,
 		ctx:          ctx,
 	}, nil
@@ -63,6 +66,15 @@ func (k *Kafka) Subscribe(handler func(message []byte) error) {
 
 	log.Debug("Starting broker subscription loop")
 	defer log.Debug("Broker subscription loop exited")
+
+	// creating semaphore to limit the number of maximum concurrent workers
+	semaphore := make(chan struct{}, k.maxWorkers)
+	var wg sync.WaitGroup
+
+	// wait for all message handlers to exit
+	defer func() {
+		wg.Wait()
+	}()
 
 	// main loop
 	for {
@@ -99,22 +111,43 @@ func (k *Kafka) Subscribe(handler func(message []byte) error) {
 			continue
 		}
 
-		// add message key to log
-		log = log.With(logger.Field("message_key", string(msg.Key)))
-		// logging message value
-		log.Debug("Message received", logger.Field("message_value", string(msg.Value)))
-
-		// now when we got message we need to handle it
-		// retries of handling must be handled in handler
-		if err = handler(msg.Value); err != nil {
-			log.Warn("Message handler returned error. Skipping message", logger.Error(err))
-			// NOT COMMITING MESSAGE ON HANDLER ERROR
-			continue
+		// taking the semaphore slot and waiting for context cancellation if we block here
+		select {
+		case <-k.ctx.Done():
+			log.Debug("Context cancelled during waiting for semaphore slot")
+			return
+		case semaphore <- struct{}{}:
+			// adding new worker to waitgroup
+			wg.Add(1)
 		}
 
-		// COMMIT ONLY IF MESSAGE HANDLED SUCCESSFULLY
-		if err = k.reader.CommitMessages(k.ctx, msg); err != nil {
-			log.Warn("Failed to commit broker message", logger.Error(err))
-		}
+		// handling message concurrently
+		go func(msg kafkago.Message) {
+			// releasing semaphore slot
+			defer func() {
+				<-semaphore
+				wg.Done()
+			}()
+
+			// add message key to log (this is goroutine's local logger)
+			log := log.With(logger.Field("message_key", string(msg.Key)))
+			// logging message value
+			log.Debug("Message received", logger.Field("message_value", string(msg.Value)))
+
+			// now when we got message we need to handle it.
+			// retries of handling must be handled in handler
+			if err = handler(msg.Value); err != nil {
+				log.Warn("Message handler returned error. Skipping message", logger.Error(err))
+				// NOT COMMITING MESSAGE ON HANDLER ERROR
+				return
+			}
+
+			// COMMIT ONLY IF MESSAGE HANDLED SUCCESSFULLY
+			if err = k.reader.CommitMessages(k.ctx, msg); err != nil {
+				log.Warn("Failed to commit broker message", logger.Error(err))
+			} else {
+				log.Debug("Message committed")
+			}
+		}(msg)
 	}
 }

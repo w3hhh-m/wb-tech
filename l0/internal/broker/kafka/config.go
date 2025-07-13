@@ -25,6 +25,9 @@ type Config struct {
 	// ReadTimeOut is a timeout for reading from Kafka.
 	ReadTimeOut time.Duration `env:"KAFKA_READ_TIMEOUT" envDefault:"5s"`
 
+	// MaxWorkers is a maximum number of concurrent workers for messages handling
+	MaxWorkers int `env:"MAX_WORKERS" envDefault:"1"`
+
 	// custom retry configuration
 	// RetryTimeOut is a timeout for retrying operations.
 	RetryTimeOut time.Duration `env:"KAFKA_RETRY_TIMEOUT" envDefault:"5s"`
