@@ -126,7 +126,7 @@ func (a *App) Run() {
 
 	// subscribe will block until something goes wrong or application is exiting.
 	// given handler will be called on every successfully received message
-	a.broker.Subscribe(func(msg []byte) error {
+	a.broker.Subscribe(func(message *broker.Message) error {
 		// TODO: message handling logic
 		return nil
 	})

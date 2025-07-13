@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 	"time"
+	"wb-tech-l0/internal/broker"
 	"wb-tech-l0/internal/logger"
 
 	kafkago "github.com/segmentio/kafka-go"
@@ -59,7 +60,7 @@ func (k *Kafka) Close() error {
 // Subscribe starts main Kafka broker subscription loop
 // and blocks until something goes wrong or application is exiting.
 // It takes handler which will be called on every fetched message
-func (k *Kafka) Subscribe(handler func(message []byte) error) {
+func (k *Kafka) Subscribe(handler func(message *broker.Message) error) {
 	// add stats to log
 	stats := k.reader.Stats()
 	log := k.log.With(logger.Field("client_id", stats.ClientID), logger.Field("topic", stats.Topic))
@@ -136,7 +137,21 @@ func (k *Kafka) Subscribe(handler func(message []byte) error) {
 
 			// now when we got message we need to handle it.
 			// retries of handling must be handled in handler
-			if err = handler(msg.Value); err != nil {
+
+			// making default Message struct from received message
+			headers := make(map[string][]byte, len(msg.Headers))
+			for _, h := range msg.Headers {
+				headers[h.Key] = h.Value
+			}
+
+			message := &broker.Message{
+				Key:       msg.Key,
+				Value:     msg.Value,
+				Timestamp: msg.Time,
+				Headers:   headers,
+			}
+
+			if err = handler(message); err != nil {
 				log.Warn("Message handler returned error. Skipping message", logger.Error(err))
 				// NOT COMMITING MESSAGE ON HANDLER ERROR
 				return
