@@ -122,8 +122,21 @@ func (k *Kafka) Subscribe(handler func(message *broker.Message) error) {
 			wg.Add(1)
 		}
 
+		// making default Message struct from received message
+		headers := make(map[string][]byte, len(msg.Headers))
+		for _, h := range msg.Headers {
+			headers[h.Key] = h.Value
+		}
+
+		message := &broker.Message{
+			Key:       msg.Key,
+			Value:     msg.Value,
+			Timestamp: msg.Time,
+			Headers:   headers,
+		}
+
 		// handling message concurrently
-		go func(msg kafkago.Message) {
+		go func(message *broker.Message) {
 			// releasing semaphore slot
 			defer func() {
 				<-semaphore
@@ -137,20 +150,6 @@ func (k *Kafka) Subscribe(handler func(message *broker.Message) error) {
 
 			// now when we got message we need to handle it.
 			// retries of handling must be handled in handler
-
-			// making default Message struct from received message
-			headers := make(map[string][]byte, len(msg.Headers))
-			for _, h := range msg.Headers {
-				headers[h.Key] = h.Value
-			}
-
-			message := &broker.Message{
-				Key:       msg.Key,
-				Value:     msg.Value,
-				Timestamp: msg.Time,
-				Headers:   headers,
-			}
-
 			if err = handler(message); err != nil {
 				log.Warn("Message handler returned error. Skipping message", logger.Error(err))
 				// NOT COMMITING MESSAGE ON HANDLER ERROR
@@ -163,6 +162,6 @@ func (k *Kafka) Subscribe(handler func(message *broker.Message) error) {
 			} else {
 				log.Debug("Message committed")
 			}
-		}(msg)
+		}(message)
 	}
 }

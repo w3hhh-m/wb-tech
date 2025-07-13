@@ -43,6 +43,23 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	// not validating config here, because it`s validated while parsing
+
+	// not validating required fields here, because it`s validated while parsing
+	if cfg.MinBytes < 0 {
+		cfg.MinBytes = 1
+	}
+	if cfg.MaxBytes < 0 {
+		cfg.MaxBytes = 10e6
+	}
+	if cfg.StartOffset < -2 {
+		cfg.StartOffset = -2
+	}
+	if cfg.MaxWorkers < 0 {
+		cfg.MaxWorkers = 1
+	}
+	if cfg.MaxRetries < 0 {
+		cfg.MaxRetries = 3
+	}
+
 	return cfg, nil
 }

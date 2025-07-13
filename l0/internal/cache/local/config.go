@@ -20,5 +20,9 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if cfg.MaxItems < 0 {
+		cfg.MaxItems = 1000
+	}
 	return cfg, nil
 }

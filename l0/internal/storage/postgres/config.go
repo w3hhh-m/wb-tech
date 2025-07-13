@@ -51,6 +51,17 @@ func LoadConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-	// not validating config here, because it`s validated while parsing
+
+	// not validating required fields here, because it`s validated while parsing
+	if cfg.PoolMinConns < 0 {
+		cfg.PoolMinConns = 2
+	}
+	if cfg.PoolMaxConns < 0 {
+		cfg.PoolMaxConns = 10
+	}
+	if cfg.MaxRetries < 0 {
+		cfg.MaxRetries = 3
+	}
+
 	return cfg, nil
 }
