@@ -8,7 +8,7 @@ import (
 
 // main is the entry point of the application
 func main() {
-	if err := app.RunApp(); err != nil {
+	if err := app.Start(); err != nil {
 		fmt.Printf("Application error: %s\n", err)
 		os.Exit(1)
 	}

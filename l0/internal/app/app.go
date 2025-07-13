@@ -16,6 +16,8 @@ import (
 	"wb-tech-l0/internal/registry"
 	"wb-tech-l0/internal/storage"
 	"wb-tech-l0/internal/storage/postgres"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // App is a struct that represents all application
@@ -45,20 +47,35 @@ type App struct {
 	// without changing a single line of code
 }
 
-// RunApp creates and runs the application with full lifecycle management.
+// Start creates and runs the application with full lifecycle management.
 // It loads the configuration, initializes the logger,
-// registers services, creates the clients,
-// and starts main application logic.
+// creates tha application  and starts main application logic.
 // After receiving exit signal it tries
 // to gracefully shutdown application.
 // It returns an error if something goes wrong.
-func RunApp() error {
+func Start() error {
 	// setting main application context cancelled on exit signals
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
+	// loading application configuration
+	cfg, err := config.LoadConfig()
+	if err != nil {
+		return fmt.Errorf("could not load application config: %w", err)
+	}
+
+	// log implements Logger interface to avoid hardcoding exactly zap.
+	// if we want to change log, we can just implement interface with new package
+	// and change the line below
+	log, err := zaplogger.New(cfg.LogLevel, cfg.Hostname)
+	if err != nil {
+		return fmt.Errorf("could not initialize log: %w", err)
+	}
+
+	log.Info("Successfully loaded application config")
+
 	// creating new application instance
-	app, err := New(ctx)
+	app, err := New(ctx, cfg, log)
 	if err != nil {
 		return fmt.Errorf("could not create application: %w", err)
 	}
@@ -75,23 +92,8 @@ func RunApp() error {
 }
 
 // New creates and returns a new application instance.
-func New(ctx context.Context) (*App, error) {
-	// loading application configuration
-	cfg, err := config.LoadConfig()
-	if err != nil {
-		return nil, fmt.Errorf("could not load application config: %w", err)
-	}
-
-	// log implements Logger interface to avoid hardcoding exactly zap.
-	// if we want to change log, we can just implement interface with new package
-	// and change the line below
-	log, err := zaplogger.New(cfg.LogLevel, cfg.Hostname)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize log: %w", err)
-	}
-
-	log.Info("Successfully loaded application config")
-
+// It registers supported services and creates clients for them
+func New(ctx context.Context, cfg *config.Config, log logger.Logger) (*App, error) {
 	app := &App{
 		cfg: cfg,
 		log: log,
@@ -106,7 +108,7 @@ func New(ctx context.Context) (*App, error) {
 	app.registerServices()
 
 	// creating all service clients
-	if err = app.createClients(); err != nil {
+	if err := app.createClients(); err != nil {
 		// shutting down all connections if creating errors.
 		// for example, if storage creating errors, but broker was created
 		// we need to close broker
@@ -131,7 +133,7 @@ func (a *App) Run() {
 
 // Shutdown performs graceful shutdown of all services.
 // It tries to gracefully close all service connections within the timeout.
-// All services Close methods are called concurrently
+// All services are closing concurrently
 func (a *App) Shutdown() {
 	a.log.Info("Application shutting down gracefully")
 
@@ -237,36 +239,60 @@ func (a *App) registerServices() {
 // createClients creates all service clients with provided types.
 // All types must be registered in registries (in registerServices function)
 // and services required configuration must be set in environment.
+// It creates all service clients concurrently.
 func (a *App) createClients() error {
-	// creating storage client with provided StorageType.
-	// StorageType must be registered in storageRegistry (in registerServices function)
-	// and its required configuration must be set in environment.
-	storageClient, err := a.storageRegistry.Create(a.cfg.StorageType)
-	if err != nil {
-		return fmt.Errorf("could not create storage client: %w", err)
-	}
-	a.storage = storageClient
-	a.log.Info("Successfully created storage client", logger.Field("storage", a.cfg.StorageType))
+	// creating errgroup to wait for creations and check errors
+	g, _ := errgroup.WithContext(a.ctx)
 
-	// creating broker client with provided BrokerType.
-	// BrokerType must be registered in brokerRegistry (in registerServices function)
-	// and its required configuration must be set in environment.
-	brokerClient, err := a.brokerRegistry.Create(a.cfg.BrokerType)
-	if err != nil {
-		return fmt.Errorf("could not create broker client: %w", err)
-	}
-	a.broker = brokerClient
-	a.log.Info("Successfully created broker client", logger.Field("broker", a.cfg.BrokerType))
+	// creating storageClient concurrently
+	g.Go(func() error {
+		// creating storage client with provided StorageType.
+		// StorageType must be registered in storageRegistry (in registerServices function)
+		// and its required configuration must be set in environment.
+		storageClient, err := a.storageRegistry.Create(a.cfg.StorageType)
+		if err != nil {
+			return fmt.Errorf("could not create storage client: %w", err)
+		}
+		a.storage = storageClient
+		a.log.Info("Successfully created storage client", logger.Field("storage", a.cfg.StorageType))
+		return nil
+	})
 
-	// creating cache client with provided CacheType.
-	// CacheType must be registered in cacheRegistry (in registerServices function)
-	// and its required configuration must be set in environment.
-	cacheClient, err := a.cacheRegistry.Create(a.cfg.CacheType)
-	if err != nil {
-		return fmt.Errorf("could not create cache client: %w", err)
+	// creating brokerClient concurrently
+	g.Go(func() error {
+		// creating broker client with provided BrokerType.
+		// BrokerType must be registered in brokerRegistry (in registerServices function)
+		// and its required configuration must be set in environment.
+		brokerClient, err := a.brokerRegistry.Create(a.cfg.BrokerType)
+		if err != nil {
+			return fmt.Errorf("could not create broker client: %w", err)
+		}
+		a.broker = brokerClient
+		a.log.Info("Successfully created broker client", logger.Field("broker", a.cfg.BrokerType))
+		return nil
+	})
+
+	// creating cacheClient concurrently
+	g.Go(func() error {
+		// creating cache client with provided CacheType.
+		// CacheType must be registered in cacheRegistry (in registerServices function)
+		// and its required configuration must be set in environment.
+		cacheClient, err := a.cacheRegistry.Create(a.cfg.CacheType)
+		if err != nil {
+			return fmt.Errorf("could not create cache client: %w", err)
+		}
+		a.cache = cacheClient
+		a.log.Info("Successfully created cache client", logger.Field("cache", a.cfg.CacheType))
+		return nil
+	})
+
+	// waiting for all creations
+	if err := g.Wait(); err != nil {
+		// if any creation fails, return the error
+		return err
+		// if createClients errors, then Shutdown will be called
+		// and all already created clients will be closed
 	}
-	a.cache = cacheClient
-	a.log.Info("Successfully created cache client", logger.Field("cache", a.cfg.CacheType))
 
 	return nil
 }

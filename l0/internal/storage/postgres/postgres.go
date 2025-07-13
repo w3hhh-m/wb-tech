@@ -22,6 +22,8 @@ type Postgres struct {
 
 // New creates and returns initialized Postgres implementation of Storage interface
 func New(ctx context.Context, cfg *Config, log logger.Logger) (*Postgres, error) {
+	log.Debug("Attempting to create storage connection")
+
 	connString := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Database, cfg.SSLMode,
@@ -38,7 +40,7 @@ func New(ctx context.Context, cfg *Config, log logger.Logger) (*Postgres, error)
 	dbpoolCfg.MaxConnLifetime = cfg.MaxConnLifetime
 	dbpoolCfg.MaxConnIdleTime = cfg.MaxConnIdleTime
 
-	pool, err := pgxpool.NewWithConfig(context.Background(), dbpoolCfg)
+	pool, err := pgxpool.NewWithConfig(ctx, dbpoolCfg)
 	if err != nil {
 		return nil, fmt.Errorf("error connecting to postgres storage: %w", err)
 	}
