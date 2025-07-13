@@ -22,7 +22,7 @@ type Postgres struct {
 
 // New creates and returns initialized Postgres implementation of Storage interface
 func New(ctx context.Context, cfg *Config, log logger.Logger) (*Postgres, error) {
-	log.Debug("Attempting to create storage connection")
+	log.Debug("Creating storage connection")
 
 	connString := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",

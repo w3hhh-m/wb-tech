@@ -15,7 +15,7 @@ type Local struct {
 
 // New creates and returns initialized Local implementation of Cache interface
 func New(ctx context.Context, cfg *Config, log logger.Logger) (*Local, error) {
-	log.Debug("Attempting to create cache connection")
+	log.Debug("Creating cache connection")
 	return &Local{
 		maxItems: cfg.MaxItems,
 		log:      log,

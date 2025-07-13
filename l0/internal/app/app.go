@@ -124,10 +124,13 @@ func New(ctx context.Context, cfg *config.Config, log logger.Logger) (*App, erro
 func (a *App) Run() {
 	a.log.Info("Application started successfully")
 
-	// TODO: main logic
+	// subscribe will block until something goes wrong or application is exiting.
+	// given handler will be called on every successfully received message
+	a.broker.Subscribe(func(msg []byte) error {
+		// TODO: message handling logic
+		return nil
+	})
 
-	// waiting for application exit signal
-	<-a.ctx.Done()
 	a.log.Info("Got exiting signal. Shutting down application...", logger.Field("timeout", a.cfg.ShutdownTimeout))
 }
 
