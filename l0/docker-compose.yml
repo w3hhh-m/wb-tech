@@ -40,10 +40,30 @@ services:
       - wb-tech-l0-network
     # health check to confirm that postgres is ready
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DATABASE}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  migrate:
+    image: migrate/migrate
+    container_name: wb-tech-l0-migrate
+    # using environment variables from .env file
+    # to match the database connection configuration
+    # such as user, password, database name
+    env_file:
+      - .env
+    # using volume to get migrations
+    volumes:
+      - ./migrations:/migrations
+    # is in the same network with other containers (especially postgres) to communicate
+    networks:
+      - wb-tech-l0-network
+    command: [ "-path", "/migrations", "-database",  "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=${POSTGRES_SSLMODE}", "up"]
+    # waits for healthy postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   kafka:
     image: 'bitnami/kafka:latest'

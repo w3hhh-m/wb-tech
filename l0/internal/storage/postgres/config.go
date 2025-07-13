@@ -18,7 +18,7 @@ type Config struct {
 	// Password is a Postgres password to connect with.
 	Password string `env:"POSTGRES_PASSWORD,required,notEmpty"`
 	// Database is a Postgres database to connect to.
-	Database string `env:"POSTGRES_DATABASE,required,notEmpty"`
+	Database string `env:"POSTGRES_DB,required,notEmpty"`
 	// SSLMode is a Postgres SSL mode to connect with.
 	SSLMode string `env:"POSTGRES_SSLMODE" envDefault:"disable"`
 	// ConnectTimeout is a timeout for connecting to Postgres.
