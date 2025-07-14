@@ -2,6 +2,8 @@ package app
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"os/signal"
 	"sync"
@@ -13,9 +15,12 @@ import (
 	"wb-tech-l0/internal/config"
 	"wb-tech-l0/internal/logger"
 	zaplogger "wb-tech-l0/internal/logger/zap"
+	"wb-tech-l0/internal/models"
 	"wb-tech-l0/internal/registry"
 	"wb-tech-l0/internal/storage"
 	"wb-tech-l0/internal/storage/postgres"
+
+	"github.com/go-playground/validator/v10"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -124,10 +129,53 @@ func New(ctx context.Context, cfg *config.Config, log logger.Logger) (*App, erro
 func (a *App) Run() {
 	a.log.Info("Application started successfully")
 
+	// using single instance of validator for all messages
+	// because it caches information about structs and validations
+	validate := validator.New(validator.WithRequiredStructEnabled())
+
 	// subscribe will block until something goes wrong or application is exiting.
-	// given handler will be called on every successfully received message
+	// given handler will be called on every successfully received message.
+	// handler must return error if something is wrong with the message handling.
+	// on error, broker will NOT commit message and there could be retries.
 	a.broker.Subscribe(func(message *broker.Message) error {
-		// TODO: message handling logic
+		// add message key to log (this is handler's local logger)
+		log := a.log.With(logger.Field("message_key", string(message.Key)))
+
+		var order models.Order
+		// parsing message value in order struct
+		if err := json.Unmarshal(message.Value, &order); err != nil {
+			log.Debug("Invalid JSON message. Handler skipping message", logger.Error(err))
+			// returning nil to commit message in Subscribe
+			return nil
+		}
+
+		// validating
+		if err := validate.Struct(order); err != nil {
+			log.Debug("Invalid order schema. Handler skipping message", logger.Error(err))
+			// returning nil to commit message in Subscribe
+			return nil
+		}
+
+		// adding order uid to logger for chaining storage logs with handler logs
+		log = log.With(logger.Field("order_uid", order.OrderUID))
+
+		// saving message
+		err := a.storage.SaveOrder(&order)
+		if err != nil {
+			log.Warn("Failed to save order", logger.Error(err))
+			if errors.Is(err, storage.ErrUniqueViolation) {
+				log.Warn("Skipping order because it already exists")
+				// returning nil to commit message in Subscribe because of invalid data
+				return nil
+			}
+			// returning error to NOT commit message in broker
+			return err
+		}
+
+		log.Debug("Order saved successfully")
+
+		// TODO: cache
+
 		return nil
 	})
 

@@ -61,6 +61,11 @@ func (k *Kafka) Close() error {
 // and blocks until something goes wrong or application is exiting.
 // It takes handler which will be called on every fetched message.
 // It handles the retries of message consumption.
+// It takes MaxWorkers amount of messages and handles them concurrently.
+// Given handler must return error if something is wrong with actually message handling.
+// On handler error method will NOT commit message.
+// If something is wrong with the message itself (for example, bad json)
+// handler must skip message and return nil to commit it
 func (k *Kafka) Subscribe(handler func(message *broker.Message) error) {
 	// add stats to log
 	stats := k.reader.Stats()
