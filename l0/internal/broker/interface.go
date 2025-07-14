@@ -9,7 +9,8 @@ type Broker interface {
 	// Subscribe starts main subscription loop
 	// and blocks until something goes wrong or
 	// application is exiting. It takes handler which
-	// will be called on every fetched message
+	// will be called on every fetched message.
+	// It must handle retries of message consumptions
 	Subscribe(handler func(message *Message) error)
 }
 

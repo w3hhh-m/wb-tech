@@ -59,7 +59,8 @@ func (k *Kafka) Close() error {
 
 // Subscribe starts main Kafka broker subscription loop
 // and blocks until something goes wrong or application is exiting.
-// It takes handler which will be called on every fetched message
+// It takes handler which will be called on every fetched message.
+// It handles the retries of message consumption.
 func (k *Kafka) Subscribe(handler func(message *broker.Message) error) {
 	// add stats to log
 	stats := k.reader.Stats()
