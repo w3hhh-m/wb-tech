@@ -22,8 +22,24 @@ type Config struct {
 	// CacheType is a type of cache used in application
 	CacheType string `env:"CACHE_TYPE,required,notEmpty"`
 
+	// Server is the HTTP server configuration
+	Server ServerConfig
 	// ShutdownTimeout is a timeout for application graceful shutdown
 	ShutdownTimeout time.Duration `env:"SHUTDOWN_TIMEOUT" envDefault:"10s" validate:"gte=1s"`
+}
+
+// ServerConfig describes HTTP server configuration
+// It is part of main application config, so I declared it here
+// (unlike configs for external services, that can be switched)
+type ServerConfig struct {
+	// Address is the address the HTTP server listens on
+	Address string `env:"HTTP_ADDRESS" envDefault:":8080"`
+	// ReadTimeout is the maximum duration for reading the entire request
+	ReadTimeout time.Duration `env:"HTTP_READ_TIMEOUT" envDefault:"5s" validate:"gte=1s"`
+	// WriteTimeout is the maximum duration before timing out writes of the response
+	WriteTimeout time.Duration `env:"HTTP_WRITE_TIMEOUT" envDefault:"10s" validate:"gte=1s"`
+	// IdleTimeout is the maximum amount of time to wait for the next request
+	IdleTimeout time.Duration `env:"HTTP_IDLE_TIMEOUT" envDefault:"120s" validate:"gte=1s"`
 }
 
 // LoadConfig loads application Config from environment variables.

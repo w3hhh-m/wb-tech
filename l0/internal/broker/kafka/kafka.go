@@ -157,7 +157,7 @@ func (k *Kafka) Subscribe(handler func(message *broker.Message) error) {
 			// now when we got message we need to handle it.
 			// retries of handling must be handled in handler
 			if err = handler(message); err != nil {
-				log.Warn("Message handler returned error. Skipping message", logger.Error(err))
+				log.Warn("Message handler returned error. Not commiting message", logger.Error(err))
 				// NOT COMMITING MESSAGE ON HANDLER ERROR
 				return
 			}
