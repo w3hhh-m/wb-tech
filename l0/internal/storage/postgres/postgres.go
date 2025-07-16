@@ -7,6 +7,7 @@ import (
 	"time"
 	"wb-tech-l0/internal/logger"
 	"wb-tech-l0/internal/models"
+	"wb-tech-l0/internal/server/middlewares"
 	"wb-tech-l0/internal/storage"
 
 	"github.com/jackc/pgerrcode"
@@ -235,6 +236,10 @@ func (p *Postgres) GetOrder(ctx context.Context, uid string) (*models.Order, err
 	log := p.log.With(logger.Field("order_uid", uid))
 	// adding max attempts to logs
 	log = log.With(logger.Field("max_attempts", p.maxRetries))
+
+	// getting request id
+	requestID := middlewares.GetRequestID(ctx)
+	log = log.With(logger.Field("request_id", requestID))
 
 	// getting with max retries
 	for attempt := 1; attempt <= p.maxRetries; attempt++ {

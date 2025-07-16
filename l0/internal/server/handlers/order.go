@@ -26,6 +26,7 @@ func GetOrderHandler(cache cache.Cache, store storage.Storage) http.HandlerFunc 
 		}
 
 		// TODO: from cache
+		// TODO: logs
 
 		// getting order
 		order, err := store.GetOrder(r.Context(), uid)

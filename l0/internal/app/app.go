@@ -127,9 +127,9 @@ func New(ctx context.Context, cfg *config.Config, log logger.Logger) (*App, erro
 	}
 
 	// creating HTTP server
-	router := server.NewRouter(app.cache, app.storage)
-	app.httpServer = server.New(&cfg.Server, log.With(logger.Field("address", cfg.Server.Address)), router)
-	log.Info("Successfully created server", logger.Field("address", cfg.Server.Address))
+	router := server.NewRouter(app.log, app.cache, app.storage)
+	app.httpServer = server.New(&cfg.Server, app.log.With(logger.Field("address", cfg.Server.Address)), router)
+	app.log.Info("Successfully created server", logger.Field("address", cfg.Server.Address))
 
 	return app, nil
 }
