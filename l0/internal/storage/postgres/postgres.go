@@ -71,6 +71,7 @@ func (p *Postgres) Close() error {
 
 // SaveOrder takes order and tries to save it max retries times or until success.
 // It returns error if after max retires times order still was not saved.
+// It is using application context with timeout for requests
 func (p *Postgres) SaveOrder(order *models.Order) error {
 	var err error
 
@@ -129,6 +130,7 @@ func (p *Postgres) SaveOrder(order *models.Order) error {
 
 		if err == nil {
 			// if everything was good, return nil error
+			log.Debug("Order saved successfully")
 			return nil
 		}
 
@@ -137,6 +139,7 @@ func (p *Postgres) SaveOrder(order *models.Order) error {
 		if errors.As(err, &pgErr) {
 			// if message violates unique constraint, return this error
 			if pgErr.Code == pgerrcode.UniqueViolation {
+				log.Debug("Order violates unique constraint")
 				return storage.ErrUniqueViolation
 			}
 		}
@@ -219,4 +222,130 @@ func (p *Postgres) insertOrderTx(ctx context.Context, tx pgx.Tx, o *models.Order
 	}
 
 	return nil
+}
+
+// GetOrder retrieves an order by its UID with retry logic.
+// It returns error if after max retires order still was not fetched.
+// It is using user request context with timeout for requests
+func (p *Postgres) GetOrder(ctx context.Context, uid string) (*models.Order, error) {
+	var err error
+	var order *models.Order
+
+	// adding order uid to logs for chaining with handler logs
+	log := p.log.With(logger.Field("order_uid", uid))
+	// adding max attempts to logs
+	log = log.With(logger.Field("max_attempts", p.maxRetries))
+
+	// getting with max retries
+	for attempt := 1; attempt <= p.maxRetries; attempt++ {
+
+		log.Debug("Attempting to get order", logger.Field("attempt", attempt))
+
+		// creating context for this retry with request timeout
+		reqCtx, cancel := context.WithTimeout(ctx, p.requestTimeout)
+
+		// using function, to defer request context cancel
+		func() {
+			defer cancel()
+			order, err = p.getOrder(reqCtx, uid)
+		}()
+
+		if err == nil {
+			log.Debug("Order fetched successfully")
+			return order, err
+		}
+
+		if errors.Is(err, storage.ErrNotFound) {
+			// if error is about no such order, return this error
+			log.Debug("No such order")
+			return nil, storage.ErrNotFound
+		}
+
+		log.Warn("Failed to get order", logger.Field("attempt", attempt), logger.Error(err))
+
+		// waiting for next try or app щк user context cancellation
+		if attempt < p.maxRetries {
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-p.ctx.Done():
+				return nil, p.ctx.Err()
+			case <-time.After(p.retryTimeout):
+				// continue retries
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("get order failed after %d attempts: %w", p.maxRetries, err)
+}
+
+func (p *Postgres) getOrder(ctx context.Context, uid string) (*models.Order, error) {
+	var order models.Order
+
+	// first request - order, delivery, payment
+	queryOrder := `
+	SELECT 
+		o.order_uid, o.track_number, o.entry, o.locale, o.internal_signature,
+		o.customer_id, o.delivery_service, o.shardkey, o.sm_id, o.date_created, o.oof_shard,
+
+		d.name, d.phone, d.zip, d.city, d.address, d.region, d.email,
+
+		p.transaction, p.request_id, p.currency, p.provider, p.amount,
+		p.payment_dt, p.bank, p.delivery_cost, p.goods_total, p.custom_fee
+	FROM orders o
+	JOIN delivery d ON o.order_uid = d.order_uid
+	JOIN payment p ON o.order_uid = p.order_uid
+	WHERE o.order_uid = $1
+	`
+
+	err := p.pool.QueryRow(ctx, queryOrder, uid).Scan(
+		// order
+		&order.OrderUID, &order.TrackNumber, &order.Entry, &order.Locale, &order.InternalSignature,
+		&order.CustomerID, &order.DeliveryService, &order.ShardKey, &order.SmID, &order.DateCreated, &order.OofShard,
+		// delivery
+		&order.Delivery.Name, &order.Delivery.Phone, &order.Delivery.Zip, &order.Delivery.City,
+		&order.Delivery.Address, &order.Delivery.Region, &order.Delivery.Email,
+		// payment
+		&order.Payment.Transaction, &order.Payment.RequestID, &order.Payment.Currency,
+		&order.Payment.Provider, &order.Payment.Amount, &order.Payment.PaymentDT,
+		&order.Payment.Bank, &order.Payment.DeliveryCost, &order.Payment.GoodsTotal, &order.Payment.CustomFee,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, storage.ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to fetch order info: %w", err)
+	}
+
+	// first request - items
+	queryItems := `
+	SELECT 
+		chrt_id, track_number, price, rid, name,
+		sale, size, total_price, nm_id, brand, status
+	FROM items
+	WHERE order_uid = $1
+	`
+
+	rows, err := p.pool.Query(ctx, queryItems, uid)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query items: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var item models.Item
+		err := rows.Scan(
+			&item.ChrtID, &item.TrackNumber, &item.Price, &item.RID, &item.Name,
+			&item.Sale, &item.Size, &item.TotalPrice, &item.NmID, &item.Brand, &item.Status,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan item: %w", err)
+		}
+		order.Items = append(order.Items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return &order, nil
 }

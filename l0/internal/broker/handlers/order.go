@@ -17,7 +17,7 @@ import (
 func OrdersHandler(log logger.Logger, store storage.Storage, validate *validator.Validate) func(message *broker.Message) error {
 	return func(message *broker.Message) error {
 		// add message key to log
-		log = log.With(logger.Field("message_key", string(message.Key)))
+		log := log.With(logger.Field("message_key", string(message.Key)))
 
 		var order models.Order
 		// parsing message value in order struct
@@ -49,8 +49,6 @@ func OrdersHandler(log logger.Logger, store storage.Storage, validate *validator
 			// returning error to NOT commit message in broker
 			return err
 		}
-
-		log.Debug("Order saved successfully")
 
 		return nil
 	}

@@ -11,6 +11,6 @@ import (
 func NewRouter(cache cache.Cache, storage storage.Storage) http.Handler {
 	mux := http.NewServeMux()
 	// register GetOrder handler
-	mux.HandleFunc("/order", serverHandlers.GetOrderHandler(cache, storage))
+	mux.HandleFunc("/order/", serverHandlers.GetOrderHandler(cache, storage))
 	return mux
 }
