@@ -317,7 +317,7 @@ func (p *Postgres) getOrder(ctx context.Context, uid string) (*models.Order, err
 		return nil, fmt.Errorf("failed to fetch order info: %w", err)
 	}
 
-	// first request - items
+	// second request - items
 	queryItems := `
 	SELECT 
 		chrt_id, track_number, price, rid, name,
