@@ -1,0 +1,242 @@
+basePath: /
+definitions:
+  models.Delivery:
+    description: Delivery details for the order.
+    properties:
+      address:
+        description: Address
+        type: string
+      city:
+        description: City
+        type: string
+      email:
+        description: Email
+        type: string
+      name:
+        description: Recipient name
+        type: string
+      phone:
+        description: Recipient phone
+        type: string
+      region:
+        description: Region
+        type: string
+      zip:
+        description: Postal code
+        type: string
+    required:
+    - address
+    - city
+    - email
+    - name
+    - phone
+    - region
+    - zip
+    type: object
+  models.Item:
+    description: Product details in the order.
+    properties:
+      brand:
+        description: Brand
+        type: string
+      chrt_id:
+        type: integer
+      name:
+        description: Product name
+        type: string
+      nm_id:
+        type: integer
+      price:
+        description: Unit price
+        minimum: 0
+        type: integer
+      rid:
+        description: RID
+        type: string
+      sale:
+        description: Discount (%)
+        maximum: 100
+        minimum: 0
+        type: integer
+      size:
+        description: Size
+        type: string
+      status:
+        description: Status
+        type: integer
+      total_price:
+        description: Total price
+        minimum: 0
+        type: integer
+      track_number:
+        description: Tracking number
+        type: string
+    required:
+    - brand
+    - chrt_id
+    - name
+    - nm_id
+    - price
+    - rid
+    - sale
+    - size
+    - status
+    - total_price
+    - track_number
+    type: object
+  models.Order:
+    description: Order received from external system. Contains delivery, payment and
+      items info.
+    properties:
+      customer_id:
+        description: Customer ID
+        type: string
+      date_created:
+        description: Order creation date
+        type: string
+      delivery:
+        allOf:
+        - $ref: '#/definitions/models.Delivery'
+        description: Delivery info
+      delivery_service:
+        description: Delivery service
+        type: string
+      entry:
+        type: string
+      internal_signature:
+        description: Internal signature
+        type: string
+      items:
+        description: List of items
+        items:
+          $ref: '#/definitions/models.Item'
+        minItems: 1
+        type: array
+      locale:
+        description: Locale
+        type: string
+      oof_shard:
+        type: string
+      order_uid:
+        description: Unique order identifier
+        type: string
+      payment:
+        allOf:
+        - $ref: '#/definitions/models.Payment'
+        description: Payment info
+      shardkey:
+        type: string
+      sm_id:
+        minimum: 0
+        type: integer
+      track_number:
+        description: Tracking number
+        type: string
+    required:
+    - customer_id
+    - date_created
+    - delivery
+    - delivery_service
+    - entry
+    - items
+    - locale
+    - oof_shard
+    - order_uid
+    - payment
+    - shardkey
+    - sm_id
+    - track_number
+    type: object
+  models.Payment:
+    description: Payment details for the order.
+    properties:
+      amount:
+        description: Payment amount
+        minimum: 0
+        type: integer
+      bank:
+        description: Bank name
+        type: string
+      currency:
+        description: Payment currency
+        type: string
+      custom_fee:
+        description: Custom fee
+        minimum: 0
+        type: integer
+      delivery_cost:
+        description: Delivery cost
+        minimum: 0
+        type: integer
+      goods_total:
+        description: Total goods cost
+        minimum: 0
+        type: integer
+      payment_dt:
+        description: Payment timestamp
+        type: integer
+      provider:
+        description: Payment provider
+        type: string
+      request_id:
+        description: Request ID
+        type: string
+      transaction:
+        description: Transaction ID
+        type: string
+    required:
+    - amount
+    - bank
+    - currency
+    - custom_fee
+    - delivery_cost
+    - goods_total
+    - payment_dt
+    - provider
+    - transaction
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: w3hhh.m@gmail.com
+    url: https://github.com/w3hhh-m/wb-tech/tree/main/l0
+  description: Сервис для хранения и получения заказов.
+  title: WB Tech L0 Orders API
+  version: "1.0"
+paths:
+  /order/{order_uid}:
+    get:
+      description: Возвращает заказ по его уникальному идентификатору
+      parameters:
+      - description: UID заказа
+        in: path
+        name: order_uid
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Order'
+        "400":
+          description: missing order uid
+          schema:
+            type: string
+        "404":
+          description: order not found
+          schema:
+            type: string
+        "405":
+          description: method not allowed
+          schema:
+            type: string
+        "500":
+          description: internal server error
+          schema:
+            type: string
+      summary: Получить заказ по UID
+      tags:
+      - order
+schemes:
+- http
+swagger: "2.0"

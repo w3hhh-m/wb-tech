@@ -1,16 +1,26 @@
 package models
 
+// Item represents a product in the order.
+// @Description Product details in the order.
 type Item struct {
-	// using pointer to int to correctly handle required tag
-	ChrtID      *int64 `json:"chrt_id" validate:"required,gt=0"`
+	ChrtID *int64 `json:"chrt_id" validate:"required,gt=0"`
+	// Tracking number
 	TrackNumber string `json:"track_number" validate:"required"`
-	Price       *int   `json:"price" validate:"required,gte=0"`
-	RID         string `json:"rid" validate:"required"`
-	Name        string `json:"name" validate:"required"`
-	Sale        *int   `json:"sale" validate:"required,gte=0,lte=100"`
-	Size        string `json:"size" validate:"required"`
-	TotalPrice  *int   `json:"total_price" validate:"required,gte=0"`
-	NmID        *int64 `json:"nm_id" validate:"required"`
-	Brand       string `json:"brand" validate:"required"`
-	Status      *int   `json:"status" validate:"required"`
+	// Unit price
+	Price *int `json:"price" validate:"required,gte=0"`
+	// RID
+	RID string `json:"rid" validate:"required"`
+	// Product name
+	Name string `json:"name" validate:"required"`
+	// Discount (%)
+	Sale *int `json:"sale" validate:"required,gte=0,lte=100"`
+	// Size
+	Size string `json:"size" validate:"required"`
+	// Total price
+	TotalPrice *int   `json:"total_price" validate:"required,gte=0"`
+	NmID       *int64 `json:"nm_id" validate:"required"`
+	// Brand
+	Brand string `json:"brand" validate:"required"`
+	// Status
+	Status *int `json:"status" validate:"required"`
 }

@@ -1,0 +1,326 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "Сервис для хранения и получения заказов.",
+        "title": "WB Tech L0 Orders API",
+        "contact": {
+            "url": "https://github.com/w3hhh-m/wb-tech/tree/main/l0",
+            "email": "w3hhh.m@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/order/{order_uid}": {
+            "get": {
+                "description": "Возвращает заказ по его уникальному идентификатору",
+                "tags": [
+                    "order"
+                ],
+                "summary": "Получить заказ по UID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "UID заказа",
+                        "name": "order_uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Order"
+                        }
+                    },
+                    "400": {
+                        "description": "missing order uid",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "order not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "405": {
+                        "description": "method not allowed",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "internal server error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.Delivery": {
+            "description": "Delivery details for the order.",
+            "type": "object",
+            "required": [
+                "address",
+                "city",
+                "email",
+                "name",
+                "phone",
+                "region",
+                "zip"
+            ],
+            "properties": {
+                "address": {
+                    "description": "Address",
+                    "type": "string"
+                },
+                "city": {
+                    "description": "City",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "Email",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "Recipient name",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "Recipient phone",
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Region",
+                    "type": "string"
+                },
+                "zip": {
+                    "description": "Postal code",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Item": {
+            "description": "Product details in the order.",
+            "type": "object",
+            "required": [
+                "brand",
+                "chrt_id",
+                "name",
+                "nm_id",
+                "price",
+                "rid",
+                "sale",
+                "size",
+                "status",
+                "total_price",
+                "track_number"
+            ],
+            "properties": {
+                "brand": {
+                    "description": "Brand",
+                    "type": "string"
+                },
+                "chrt_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "Product name",
+                    "type": "string"
+                },
+                "nm_id": {
+                    "type": "integer"
+                },
+                "price": {
+                    "description": "Unit price",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "rid": {
+                    "description": "RID",
+                    "type": "string"
+                },
+                "sale": {
+                    "description": "Discount (%)",
+                    "type": "integer",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "size": {
+                    "description": "Size",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "Status",
+                    "type": "integer"
+                },
+                "total_price": {
+                    "description": "Total price",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "track_number": {
+                    "description": "Tracking number",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Order": {
+            "description": "Order received from external system. Contains delivery, payment and items info.",
+            "type": "object",
+            "required": [
+                "customer_id",
+                "date_created",
+                "delivery",
+                "delivery_service",
+                "entry",
+                "items",
+                "locale",
+                "oof_shard",
+                "order_uid",
+                "payment",
+                "shardkey",
+                "sm_id",
+                "track_number"
+            ],
+            "properties": {
+                "customer_id": {
+                    "description": "Customer ID",
+                    "type": "string"
+                },
+                "date_created": {
+                    "description": "Order creation date",
+                    "type": "string"
+                },
+                "delivery": {
+                    "description": "Delivery info",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Delivery"
+                        }
+                    ]
+                },
+                "delivery_service": {
+                    "description": "Delivery service",
+                    "type": "string"
+                },
+                "entry": {
+                    "type": "string"
+                },
+                "internal_signature": {
+                    "description": "Internal signature",
+                    "type": "string"
+                },
+                "items": {
+                    "description": "List of items",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/models.Item"
+                    }
+                },
+                "locale": {
+                    "description": "Locale",
+                    "type": "string"
+                },
+                "oof_shard": {
+                    "type": "string"
+                },
+                "order_uid": {
+                    "description": "Unique order identifier",
+                    "type": "string"
+                },
+                "payment": {
+                    "description": "Payment info",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/models.Payment"
+                        }
+                    ]
+                },
+                "shardkey": {
+                    "type": "string"
+                },
+                "sm_id": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "track_number": {
+                    "description": "Tracking number",
+                    "type": "string"
+                }
+            }
+        },
+        "models.Payment": {
+            "description": "Payment details for the order.",
+            "type": "object",
+            "required": [
+                "amount",
+                "bank",
+                "currency",
+                "custom_fee",
+                "delivery_cost",
+                "goods_total",
+                "payment_dt",
+                "provider",
+                "transaction"
+            ],
+            "properties": {
+                "amount": {
+                    "description": "Payment amount",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "bank": {
+                    "description": "Bank name",
+                    "type": "string"
+                },
+                "currency": {
+                    "description": "Payment currency",
+                    "type": "string"
+                },
+                "custom_fee": {
+                    "description": "Custom fee",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "delivery_cost": {
+                    "description": "Delivery cost",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "goods_total": {
+                    "description": "Total goods cost",
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "payment_dt": {
+                    "description": "Payment timestamp",
+                    "type": "integer"
+                },
+                "provider": {
+                    "description": "Payment provider",
+                    "type": "string"
+                },
+                "request_id": {
+                    "description": "Request ID",
+                    "type": "string"
+                },
+                "transaction": {
+                    "description": "Transaction ID",
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

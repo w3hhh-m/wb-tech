@@ -12,8 +12,18 @@ import (
 	"wb-tech-l0/internal/storage"
 )
 
-// GetOrderHandler returns a handler function for getting orders
-// It works with cache and storage
+// GetOrderHandler godoc
+//
+//	@Summary		Получить заказ по UID
+//	@Description	Возвращает заказ по его уникальному идентификатору
+//	@Tags			order
+//	@Param			order_uid	path		string	true	"UID заказа"
+//	@Success		200			{object}	models.Order
+//	@Failure		400			{string}	string	"missing order uid"
+//	@Failure		404			{string}	string	"order not found"
+//	@Failure		405			{string}	string	"method not allowed"
+//	@Failure		500			{string}	string	"internal server error"
+//	@Router			/order/{order_uid} [get]
 func GetOrderHandler(log logger.Logger, cache cache.Cache, store storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// getting request id
