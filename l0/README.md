@@ -49,7 +49,7 @@
 ### 1. Клонируйте репозиторий
 
 ```sh
-git clone <ссылка>
+git clone https://github.com/w3hhh-m/wb-tech
 cd l0
 ```
 
