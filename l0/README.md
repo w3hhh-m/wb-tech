@@ -1,142 +1,140 @@
-# Демонстрационный сервис заказов (wb-tech-l0)
+# Order Demo Service (wb-tech-l0)
 
-## Описание
+## Description
 
-Это демонстрационный микросервис на Go, который показывает работу с Kafka, PostgreSQL и кешем. Сервис получает данные о заказах из очереди сообщений (Kafka), сохраняет их в базу данных (PostgreSQL), кеширует в памяти для быстрого доступа и предоставляет HTTP API и простой веб-интерфейс для просмотра информации о заказе по его ID.
-
----
-
-## Основные возможности
-
-- **Получение заказов из Kafka**: сервис подписывается на топик Kafka и обрабатывает входящие сообщения с заказами.
-- **Валидация и обработка ошибок**: сообщения валидируются, невалидные — логируются и игнорируются.
-- **Сохранение заказов в PostgreSQL**: при получении валидного заказа он сохраняется в БД.
-- **Кеширование заказов**: последние полученные заказы хранятся в кэше, что ускоряет повторные запросы.
-- **HTTP API**: эндпоинт для получения заказа по его UID (`GET /api/order/<order_uid>`), отдаёт JSON.
-- **Веб-интерфейс**: простая страница, где можно ввести ID заказа и получить по нему информацию.
-- **Гибкая архитектура**: через registry можно легко добавлять новые реализации брокеров, хранилищ и кешей.
-- **Graceful shutdown**: сервис корректно завершает работу, закрывая все соединения и сервисы.
-- **Логирование**: подробные логи для отладки и мониторинга.
+This is a demo microservice written in Go. It shows how to work with Kafka, PostgreSQL, and caching. The service gets order data from a message queue (Kafka), saves it to a database (PostgreSQL), caches it in memory for fast access, and provides an HTTP API and a simple web interface to view order info by ID.
 
 ---
 
-## Структура проекта
+## Key Features
+
+- **Gets orders from Kafka**: Listens to a Kafka topic and processes incoming order messages.
+- **Validates data**: Checks if messages are valid. Invalid ones are logged and ignored.
+- **Saves orders to PostgreSQL**: Stores valid orders in the database.
+- **Caches orders**: Recently viewed orders are kept in cache for faster access.
+- **HTTP API**: Get order details by UID (`GET /api/order/<order_uid>`), returns JSON.
+- **Web interface**: Simple page where you can enter an order ID and see its info.
+- **Flexible setup**: Easy to add new brokers, storage, or cache types using the registry.
+- **Graceful shutdown**: Closes all connections properly when stopping.
+- **Logging**: Detailed logs for debugging and monitoring.
+
+---
+
+## Project Structure
 
 ```
 .
-├── cmd/                # Точка входа (main.go)
+├── cmd/                # Main entry point (main.go)
 ├── internal/
-│   ├── app/            # Логика инициализации и управления жизненным циклом приложения
-│   ├── broker/         # Брокеры
-│   ├── cache/          # Кэши
-│   ├── config/         # Загрузка и валидация основного конфига приложения из env
-│   ├── logger/         # Интерфейс логгера
-│   ├── models/         # Модели данных
-│   ├── registry/       # Реализация registry для сервисов
-│   ├── server/         # HTTP сервер, роутер, хэндлеры
-│   └── storage/        # Базы данных
-├── migrations/         # SQL-миграции для создания таблиц
-├── frontend/           # Веб-интерфейс (HTML, nginx)
-├── docker-compose.yml  # Docker Compose для локального запуска
-├── Dockerfile          # Dockerfile для backend
-└── README.md           # Этот файл
+│   ├── app/            # App startup and lifecycle management
+│   ├── broker/         # Message brokers
+│   ├── cache/          # Caches
+│   ├── config/         # Loads and validates config from env
+│   ├── logger/         # Logger interface
+│   ├── models/         # Data models
+│   ├── registry/       # Service registry
+│   ├── server/         # HTTP server, router, handlers
+│   └── storage/        # Databases
+├── migrations/         # SQL migrations for tables
+├── frontend/           # Web interface (HTML, nginx)
+├── docker-compose.yml  # Docker Compose for local setup
+├── Dockerfile          # Backend Dockerfile
+└── README.md           # This file
 ```
 
 ---
 
-## Как запустить
+## How to Run
 
-### 1. Клонируйте репозиторий
+### 1. Clone the repo
 
 ```sh
 git clone https://github.com/w3hhh-m/wb-tech
 cd l0
 ```
 
-### 2. Создайте файл `.env`
+### 2. Create `.env` file
 
-Пример содержимого есть в .env.example
+Use `.env.example` as a template.
 
-### 3. Запустите сервисы через Docker Compose
+### 3. Start services with Docker Compose
 
 ```sh
 docker-compose up --build
 ```
 
-- Backend будет доступен на `http://localhost:8080`
-- Frontend (веб-интерфейс) — на `http://localhost:8081`
+- Backend: `http://localhost:8080`
+- Frontend (web interface): `http://localhost:8081`
 
-### 4. Проверьте работу
+### 4. Test it
 
-- Для проверки API:  
+- To check the API:  
   `GET http://localhost:8080/api/order/<order_uid>`
-- Для проверки интерфейса:  
-  Откройте `http://localhost:8081`, введите order_uid и получите данные.
+- To check the web interface:  
+  Open `http://localhost:8081`, enter an order_uid and see the data.
 
 ---
 
-## Как работает сервис (flow заказа)
+## How It Works (Order Flow)
 
-1. **Получение заказа**:  
-   Сервис подписывается на Kafka и ждёт новых сообщений с заказами.
+1. **Get order**:  
+   The service listens to Kafka for new order messages.
 
-2. **Валидация**:  
-   Сообщение парсится в структуру заказа и валидируется. Если невалидно — логируется и игнорируется.
+2. **Validate**:  
+   Messages are parsed and checked. Invalid ones are logged and skipped.
 
-3. **Сохранение**:  
-   Валидный заказ сохраняется в PostgreSQL (используются транзакции, чтобы не терять данные).
+3. **Save**:  
+   Valid orders are saved to PostgreSQL (uses transactions to avoid data loss).
 
 4. **HTTP API**:  
-   При запросе `/api/order/<order_uid>`:
-   - Сначала ищет в кеше.
-   - Если нет — берёт из БД, кладёт в кеш и отдаёт.
-   - Если не найден — 404.
+   When you call `/api/order/<order_uid>`:
+    - First checks the cache.
+    - If not found, gets from DB, adds to cache, and returns.
+    - If still not found, returns 404.
 
 ---
 
 ## Registry
 
-В проекте используется паттерн registry для сервисов (брокер, хранилище, кеш). Это позволяет легко добавлять новые реализации (например, другой кеш или брокер) — достаточно зарегистрировать их в registry и указать нужный тип в переменных окружения.
+The project uses a registry pattern for services (broker, storage, cache). This makes it easy to add new implementations (like a different cache or broker) – just register them and set the type in environment variables.
 
 ---
 
-## Graceful shutdown
+## Graceful Shutdown
 
-Сервис корректно завершает работу:
-- Ловит сигналы завершения (SIGINT, SIGTERM).
-- Закрывает HTTP сервер, соединения с БД, брокером и кешем.
-- Ждёт завершения всех операций с таймаутом (`SHUTDOWN_TIMEOUT`).
-
----
-
-## Миграции
-
-Миграции для создания таблиц лежат в папке `migrations/`.  
-Они автоматически применяются контейнером `migrate` при запуске через docker-compose.
+The service stops properly:
+- Catches shutdown signals (SIGINT, SIGTERM).
+- Closes HTTP server, DB, broker, and cache connections.
+- Waits for operations to finish (with timeout `SHUTDOWN_TIMEOUT`).
 
 ---
 
-## Веб-интерфейс
+## Migrations
 
-- Находится в папке `frontend/`.
-- Работает через nginx, обращается к backend по API.
-- Позволяет ввести order_uid и получить по нему заказ.
+Migrations for creating tables are in `migrations/`.  
+They run automatically when starting with docker-compose.
 
 ---
 
-## Пример запроса
+## Web Interface
+
+- Located in `frontend/`.
+- Runs on nginx, calls backend API.
+- Lets you enter an order_uid and see its details.
+
+---
+
+## Example Request
 
 ```
 GET http://localhost:8080/api/order/b563feb7b2b84b6test
 ```
 
-Ответ — JSON с полной структурой заказа.
+Response – JSON with full order details.
 
 ---
 
-## Возможности для расширения
+## Future Improvements
 
-- Легко добавить новые реализации брокеров, кешей, хранилищ (через registry).
-- Можно добавить сбор логов, метрик, их визуализацию
-
----
+- Easy to add new brokers, caches, or storage (via registry).
+- Could add log collection, metrics, and monitoring.
