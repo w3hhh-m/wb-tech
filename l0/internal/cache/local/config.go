@@ -1,6 +1,8 @@
 package local
 
 import (
+	"time"
+
 	"github.com/caarlos0/env/v11"
 	"github.com/go-playground/validator/v10"
 )
@@ -9,6 +11,8 @@ import (
 type Config struct {
 	// MaxItems is a maximum number of items that can be stored in Local cache
 	MaxItems int `env:"LOCAL_CACHE_MAX_ITEMS" envDefault:"1000" validate:"gte=1"`
+	// TTL is time-to-live for cache items
+	TTL time.Duration `env:"LOCAL_CACHE_TTL" envDefault:"3600s" validate:"gte=1s"`
 
 	// no retries on Local cache operations
 }

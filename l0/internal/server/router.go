@@ -13,7 +13,7 @@ import (
 func NewRouter(log logger.Logger, cache cache.Cache, storage storage.Storage) http.Handler {
 	mux := http.NewServeMux()
 	// register GetOrder handler
-	mux.HandleFunc("/order/", serverHandlers.GetOrderHandler(cache, storage))
+	mux.HandleFunc("/order/", serverHandlers.GetOrderHandler(log, cache, storage))
 	// adding logger middleware
 	return middlewares.LoggingMiddleware(log)(mux)
 }
