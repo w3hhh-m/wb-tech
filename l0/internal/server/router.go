@@ -15,7 +15,7 @@ import (
 func NewRouter(log logger.Logger, cache cache.Cache, storage storage.Storage) http.Handler {
 	mux := http.NewServeMux()
 	// register GetOrder handler
-	mux.HandleFunc("/order/", serverHandlers.GetOrderHandler(log, cache, storage))
+	mux.HandleFunc("/api/order/", serverHandlers.GetOrderHandler(log, cache, storage))
 	// Swagger docs handler
 	mux.HandleFunc("/api/docs/", httpSwagger.WrapHandler)
 	// adding logger middleware

@@ -23,7 +23,7 @@ import (
 //	@Failure		404			{string}	string	"order not found"
 //	@Failure		405			{string}	string	"method not allowed"
 //	@Failure		500			{string}	string	"internal server error"
-//	@Router			/order/{order_uid} [get]
+//	@Router			/api/order/{order_uid} [get]
 func GetOrderHandler(log logger.Logger, cache cache.Cache, store storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// getting request id
@@ -37,7 +37,7 @@ func GetOrderHandler(log logger.Logger, cache cache.Cache, store storage.Storage
 			return
 		}
 		// getting uid
-		uid := strings.TrimPrefix(r.URL.Path, "/order/")
+		uid := strings.TrimPrefix(r.URL.Path, "/api/order/")
 		if uid == "" {
 			log.Debug("Request /{order_uid} path is empty")
 			http.Error(w, "missing order uid", http.StatusBadRequest)
