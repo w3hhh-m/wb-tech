@@ -1,8 +1,16 @@
-# Order Demo Service (wb-tech-l0)
+# Order Demo Service (Level L0)
+
+---
 
 ## Description
 
 This is a demo microservice written in Go. It shows how to work with Kafka, PostgreSQL, and caching. The service gets order data from a message queue (Kafka), saves it to a database (PostgreSQL), caches it in memory for fast access, and provides an HTTP API and a simple web interface to view order info by ID.
+
+---
+
+## Review
+
+// TODO: add review comments from experts
 
 ---
 
@@ -138,3 +146,4 @@ Response – JSON with full order details.
 
 - Easy to add new brokers, caches, or storage (via registry).
 - Could add log collection, metrics, and monitoring.
+- I didn't add unit tests because I was limited in time. Maybe I'll add them in the future.
