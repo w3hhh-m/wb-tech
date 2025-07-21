@@ -1,18 +1,12 @@
 # Order Demo Service (Level L0)
 
----
-
 ## Description
 
 This is a demo microservice written in Go. It shows how to work with Kafka, PostgreSQL, and caching. The service gets order data from a message queue (Kafka), saves it to a database (PostgreSQL), caches it in memory for fast access, and provides an HTTP API and a simple web interface to view order info by ID.
 
----
-
 ## Review
 
 // TODO: add review comments from experts
-
----
 
 ## Key Features
 
@@ -25,8 +19,6 @@ This is a demo microservice written in Go. It shows how to work with Kafka, Post
 - **Flexible setup**: Easy to add new brokers, storage, or cache types using the registry.
 - **Graceful shutdown**: Closes all connections properly when stopping.
 - **Logging**: Detailed logs for debugging and monitoring.
-
----
 
 ## Project Structure
 
@@ -49,8 +41,6 @@ This is a demo microservice written in Go. It shows how to work with Kafka, Post
 ├── Dockerfile          # Backend Dockerfile
 └── README.md           # This file
 ```
-
----
 
 ## How to Run
 
@@ -81,8 +71,6 @@ docker-compose up --build
 - To check the web interface:  
   Open `http://localhost:8081`, enter an order_uid and see the data.
 
----
-
 ## How It Works (Order Flow)
 
 1. **Get order**:  
@@ -100,13 +88,9 @@ docker-compose up --build
     - If not found, gets from DB, adds to cache, and returns.
     - If still not found, returns 404.
 
----
-
 ## Registry
 
 The project uses a registry pattern for services (broker, storage, cache). This makes it easy to add new implementations (like a different cache or broker) – just register them and set the type in environment variables.
-
----
 
 ## Graceful Shutdown
 
@@ -115,22 +99,16 @@ The service stops properly:
 - Closes HTTP server, DB, broker, and cache connections.
 - Waits for operations to finish (with timeout `SHUTDOWN_TIMEOUT`).
 
----
-
 ## Migrations
 
 Migrations for creating tables are in `migrations/`.  
 They run automatically when starting with docker-compose.
-
----
 
 ## Web Interface
 
 - Located in `frontend/`.
 - Runs on nginx, calls backend API.
 - Lets you enter an order_uid and see its details.
-
----
 
 ## Example Request
 
@@ -139,8 +117,6 @@ GET http://localhost:8080/api/order/b563feb7b2b84b6test
 ```
 
 Response – JSON with full order details.
-
----
 
 ## Future Improvements
 
