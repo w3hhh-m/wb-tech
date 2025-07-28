@@ -11,7 +11,7 @@ Review from a WB expert:
 5/5 points
 Overall, a very good solution, just a couple of notes for the future:
 
-Clean up the imports
+Clean up the imports (✅ fixed)
 
 You defined interfaces for the main entities, nice! But why no mocks for them?
 
@@ -29,6 +29,8 @@ Avoid using and storing context in structs
 Retries should be more production-ready, at least with backoff
 
 Could add metrics and logging, but thought it was overhead for a "test task"
+
+Probably, using a migrator in a separate container is not the best idea. If there was CI, it would be nice running migrations from there, but for local development I think it is acceptable.
 ```
 
 ## Key Features
