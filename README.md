@@ -9,7 +9,7 @@ This repository contains my progress through the WB Tech Golang course, focusing
 Each level is reviewed and graded by WB Tech experts, ensuring practical understanding of Go concepts. More detailed feedback, including comments, is described in every level's README.
 
 Brief description of results:
-- **L0**: // TODO: add review results from experts
+- **L0**: 5/5 points. Overall a very good solution (some comments in l0 README)
 
 ## Exams
 
