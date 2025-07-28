@@ -4,9 +4,10 @@ import (
 	"context"
 	"net/http"
 	"time"
-	"wb-tech-l0/internal/logger"
 
 	"github.com/google/uuid"
+
+	"wb-tech-l0/internal/logger"
 )
 
 // SA1029: should not use built-in type string as key for value; define your own type to avoid collisions

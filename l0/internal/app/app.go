@@ -6,7 +6,12 @@ import (
 	"os/signal"
 	"sync"
 	"syscall"
+
+	"github.com/go-playground/validator/v10"
+	"golang.org/x/sync/errgroup"
+
 	"wb-tech-l0/internal/broker"
+	brokerHandlers "wb-tech-l0/internal/broker/handlers"
 	"wb-tech-l0/internal/broker/kafka"
 	"wb-tech-l0/internal/cache"
 	"wb-tech-l0/internal/cache/local"
@@ -17,12 +22,6 @@ import (
 	"wb-tech-l0/internal/server"
 	"wb-tech-l0/internal/storage"
 	"wb-tech-l0/internal/storage/postgres"
-
-	"github.com/go-playground/validator/v10"
-
-	brokerHandlers "wb-tech-l0/internal/broker/handlers"
-
-	"golang.org/x/sync/errgroup"
 )
 
 // App is a struct that represents all application

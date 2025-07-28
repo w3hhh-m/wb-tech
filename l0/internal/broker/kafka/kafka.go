@@ -4,10 +4,11 @@ import (
 	"context"
 	"sync"
 	"time"
-	"wb-tech-l0/internal/broker"
-	"wb-tech-l0/internal/logger"
 
 	kafkago "github.com/segmentio/kafka-go"
+
+	"wb-tech-l0/internal/broker"
+	"wb-tech-l0/internal/logger"
 )
 
 // Kafka is a Broker interface implementation for Kafka

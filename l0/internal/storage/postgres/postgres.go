@@ -5,17 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgxpool"
+
 	"wb-tech-l0/internal/logger"
 	"wb-tech-l0/internal/models"
 	"wb-tech-l0/internal/server/middlewares"
 	"wb-tech-l0/internal/storage"
-
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5/pgconn"
-
-	"github.com/jackc/pgx/v5"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Postgres is a Storage interface implementation for PostgreSQL

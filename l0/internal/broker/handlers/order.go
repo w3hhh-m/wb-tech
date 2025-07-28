@@ -3,12 +3,13 @@ package brokerhandlers
 import (
 	"encoding/json"
 	"errors"
+
+	"github.com/go-playground/validator/v10"
+
 	"wb-tech-l0/internal/broker"
 	"wb-tech-l0/internal/logger"
 	"wb-tech-l0/internal/models"
 	"wb-tech-l0/internal/storage"
-
-	"github.com/go-playground/validator/v10"
 )
 
 // OrdersHandler returns a handler function for broker.Subscribe for handling orders messages.

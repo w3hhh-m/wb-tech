@@ -2,13 +2,14 @@ package server
 
 import (
 	"net/http"
+
+	httpSwagger "github.com/swaggo/http-swagger"
+
 	"wb-tech-l0/internal/cache"
 	"wb-tech-l0/internal/logger"
 	serverHandlers "wb-tech-l0/internal/server/handlers"
 	"wb-tech-l0/internal/server/middlewares"
 	"wb-tech-l0/internal/storage"
-
-	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // NewRouter creates and returns a new HTTP router with all handlers registered

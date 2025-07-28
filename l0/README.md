@@ -6,7 +6,30 @@ This is a demo microservice written in Go. It shows how to work with Kafka, Post
 
 ## Review
 
-// TODO: add review comments from experts
+Review from a WB expert:
+```
+5/5 points
+Overall, a very good solution, just a couple of notes for the future:
+
+Clean up the imports
+
+You defined interfaces for the main entities, nice! But why no mocks for them?
+
+After writing mocks, I’d really like to see test coverage for the project
+
+Don’t use nolint: errcheck!!!
+```
+
+My own notes on my solution:
+```
+I really should write unit tests... ^_^
+
+Avoid using and storing context in structs
+
+Retries should be more production-ready, at least with backoff
+
+Could add metrics and logging, but thought it was overhead for a "test task"
+```
 
 ## Key Features
 

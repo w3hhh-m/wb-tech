@@ -2,10 +2,11 @@ package zaplogger
 
 import (
 	"fmt"
-	"wb-tech-l0/internal/logger"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+
+	"wb-tech-l0/internal/logger"
 )
 
 // Zap is a Logger interface implementation for Zap

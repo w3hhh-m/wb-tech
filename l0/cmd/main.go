@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+
 	_ "wb-tech-l0/docs/swagger"
 	"wb-tech-l0/internal/app"
 )

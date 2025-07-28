@@ -3,9 +3,8 @@ package kafka
 import (
 	"time"
 
-	"github.com/go-playground/validator/v10"
-
 	"github.com/caarlos0/env/v11"
+	"github.com/go-playground/validator/v10"
 )
 
 // Config describes Kafka broker configuration
