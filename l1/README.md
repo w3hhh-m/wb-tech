@@ -7,3 +7,7 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 ## Review
 
 // TODO: add review comments from experts
+
+## Tasks
+
+1. Struct Embedding
