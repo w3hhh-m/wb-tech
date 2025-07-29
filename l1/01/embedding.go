@@ -23,7 +23,7 @@ type Action struct {
 
 func (a Action) Start() {
 	// Action can access Human fields
-	fmt.Printf("Human %s (%d y.o.) : starting '%s' task with %d difficulty level.\n", a.Human.Name, a.Human.Age, a.Name, a.Difficulty)
+	fmt.Printf("Human %s (%d y.o.) : starting '%s' task with %d difficulty level.\n", a.Human.Name, a.Age, a.Name, a.Difficulty)
 }
 
 func main() {
