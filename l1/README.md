@@ -11,3 +11,4 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 ## Tasks
 
 1. Struct Embedding
+2. Concurrent squares
