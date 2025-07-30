@@ -16,7 +16,7 @@ import (
 
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Println("Usage: go run workers.go <number_of_workers>")
+		fmt.Println("Usage: go run shutdown.go <number_of_workers>")
 		os.Exit(1)
 	}
 
