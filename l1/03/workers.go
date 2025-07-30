@@ -1,17 +1,15 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"os"
-	"os/signal"
 	"strconv"
 	"sync"
-	"syscall"
 	"time"
 )
 
 // Continuously write data into a channel from the main goroutine.
+// NOTE: I removed infinite writing and graceful shutdown because it is in the next task
 // Create a set of N worker goroutines that read data from this channel.
 // Each worker should print the data it reads to stdout.
 // The program should accept the number of workers as a parameter and start that many worker goroutines.
@@ -28,32 +26,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
 	ch := make(chan any)
+	var wg sync.WaitGroup
+
 	// writing goroutine
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
+
 		// closing channel when exiting
 		defer close(ch)
-		i := 0
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case ch <- i:
-				// sleep with also waiting for exiting
-				select {
-				case <-ctx.Done():
-					return
-				case <-time.After(100 * time.Millisecond):
-					i++
-				}
-			}
+		for i := 0; i < 100; i++ {
+			ch <- i
+			time.Sleep(100 * time.Millisecond)
 		}
 	}()
 
-	var wg sync.WaitGroup
 	// workers
 	for i := 1; i <= workers; i++ {
 		wg.Add(1)
