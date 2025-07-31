@@ -15,5 +15,5 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 3. Multiple workers
 4. Graceful shutdown
 5. Timeout
-6. _
+6. Goroutine stop
 7. Sync Map
