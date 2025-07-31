@@ -17,3 +17,4 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 5. Timeout
 6. Goroutine stop
 7. Sync Map
+8. Bits
