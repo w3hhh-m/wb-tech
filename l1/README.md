@@ -20,3 +20,4 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 8. Bits
 9. Numbers pipeline
 10. Group temperatures
+11. Intersection
