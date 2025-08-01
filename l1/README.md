@@ -23,3 +23,4 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 11. Intersection
 12. Unique strings
 13. Swap variables
+14. Type switch
