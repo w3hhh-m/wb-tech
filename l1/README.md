@@ -30,3 +30,5 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 18. Concurrent counters
 19. Reverse string
 20. Reverse words
+21. Adapter pattern
+22. Big numbers
