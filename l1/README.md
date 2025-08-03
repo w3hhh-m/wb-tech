@@ -29,3 +29,4 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 17. Binary search
 18. Concurrent counters
 19. Reverse string
+20. Reverse words
