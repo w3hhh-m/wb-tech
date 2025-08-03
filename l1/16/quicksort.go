@@ -2,6 +2,9 @@ package main
 
 import "fmt"
 
+// Write a function quickSort([]int) []int that sorts a slice of integers.
+// You can use the middle element as the pivot.
+
 func QuickSort(arr []int) []int {
 	if len(arr) < 2 {
 		return arr
