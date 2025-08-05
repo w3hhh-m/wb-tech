@@ -35,3 +35,4 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 23. Remove from slice
 24. Distance
 25. Sleep
+26. Unique symbols
