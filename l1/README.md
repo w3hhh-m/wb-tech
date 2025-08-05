@@ -34,3 +34,4 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 22. Big numbers
 23. Remove from slice
 24. Distance
+25. Sleep
