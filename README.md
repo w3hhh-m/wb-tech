@@ -10,6 +10,7 @@ Each level is reviewed and graded by WB Tech experts, ensuring practical underst
 
 Brief description of results:
 - **L0**: 5/5 points. Overall a very good solution (some comments in l0 README)
+- **L1**: ~4.7/5 points. The solutions and tests are good, but in some places, important comments were missing.
 
 ## Exams
 

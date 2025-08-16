@@ -6,7 +6,7 @@ There were 26 tasks at L1, each is implemented in its own directory. I tried to 
 
 ## Review
 
-// TODO: add review comments from experts
+The average score across all 26 tasks is 4.7. In some tasks, I didn’t specify the required Go version (e.g., task 2), even though I should have, since my solution works after the 1.22 update.
 
 ## Tasks
 
